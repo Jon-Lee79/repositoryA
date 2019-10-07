@@ -18,7 +18,7 @@ SOURCES   = $(wildcard $(SRCDIR)/*.c)
 OBJECTS   = $(patsubst $(SRCDIR)/%.c, $(BUILDDIR)/%.o, $(SOURCES))
 #A list of all libraries to be used
 
-LIBRARIES = visa64 m
+LIBRARIES = visa32 m
 
 #The gcc option to link an external libary is -l so prefix -l to each library in the list
 LIBCMD    =  $(addprefix -l,$(LIBRARIES))
