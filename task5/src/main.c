@@ -14,8 +14,9 @@ void main(int argc, char** argv)
 	ViSession defaultRM, scopeHandle;
 	ViChar description[VI_FIND_BUFLEN];
 	char dataBuffer[2500];
+	float convertedValues[2500];
 
-	int y;
+	int y, conversion;
 
 	int lsb;
 	int msb;
@@ -43,9 +44,20 @@ void main(int argc, char** argv)
 				sleep(2);
 				status = viRead(scopeHandle,dataBuffer,2500,&resultCount);
 
+				viWrite(scopeHandle,"CH1:SCA?\n",6,&resultCount);
+				viRead(scopehandle,ret,52,&resultCount);
+				char ret[36];
+				sscanf(ret,"%f",volts);
+				conversion = volts*8/256;
+
+
+
 				for(int i = 0; i<128; i++)
 				{
 					y = dataBuffer[i];
+					convertedValues[i] = y*conversion;
+
+                    printf("%f\n",convertedValues[i]);
 					printf("\nRaw = %x,  Read = %d",y,y);
 				}
 			}
