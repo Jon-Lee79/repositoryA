@@ -2,6 +2,27 @@
 #include <stdlib.h>
 #include <math.h>	
 #include <visa.h>
+#include <string.h>
+  
+ViStatus set_voltage(ViSession handle, float volts)
+{
+	ViUInt32 resultCount;
+	ViStatus status;
+	char command[36];
+	sprintf(command, "CH1:SCALE %E\n",volts);
+	status = viWrite(handle,command,strlen(command),&resultCount);
+	return status;
+
+}   
+
+ViStatus get_curve(ViSession handle, char * dataBuffer, int npoints)
+{
+       ViUInt32 resultCount;
+       ViStatus status;
+       viWrite(handle,"CURV?\n",6,&resultCount);
+	   status = viRead(handle,dataBuffer,npoints,&resultCount);
+	   return status;
+}
 
 void main(int argc, char** argv)
 {
@@ -38,17 +59,16 @@ void main(int argc, char** argv)
 				viRead(scopeHandle,resultBuffer,256,&resultCount);
 
 				printf("\nResult count = %d",resultCount);
-				printf("\nResult buffer = %s\n",resultBuffer );
-
-				viWrite(scopeHandle,"CURV?\n",6,&resultCount);
-				sleep(2);
-				status = viRead(scopeHandle,dataBuffer,2500,&resultCount);
+				printf("\nResult buffer = %s\n",resultBuffer);
+                int v = 10000;
+                set_voltage(scopeHandle,v);
+				get_curve(scopeHandle, dataBuffer,2500);
 
 				viWrite(scopeHandle,"CH1:SCA?\n",6,&resultCount);
-				viRead(scopehandle,ret,52,&resultCount);
 				char ret[36];
-				sscanf(ret,"%f",volts);
-				conversion = volts*8/256;
+				viRead(scopeHandle,ret,52,&resultCount);
+				sscanf(ret,"%f",v);
+				conversion = v*8/256; 
 
 
 
