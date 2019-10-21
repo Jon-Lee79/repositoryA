@@ -19,6 +19,13 @@ ViStatus get_curve(ViSession handle, char * dataBuffer, int npoints)
 {
        ViUInt32 resultCount;
        ViStatus status;
+
+       char command[250];
+       sprintf(command, "DATA:START 1\n");
+       status = viWrite(handle,command,strlen(command),&resultCount);
+       sprintf(command, "DATA:STOP %d\n", npoints);
+       status = viWrite(handle,command,strlen(command),&resultCount);
+
        viWrite(handle,"CURV?\n",6,&resultCount);
 	   status = viRead(handle,dataBuffer,npoints,&resultCount);
 	   return status;
@@ -26,6 +33,7 @@ ViStatus get_curve(ViSession handle, char * dataBuffer, int npoints)
 
 void main(int argc, char** argv)
 {
+
 	unsigned char resultBuffer[256];
 	ViStatus status = VI_SUCCESS;
 	ViFindList resourceList;
@@ -37,12 +45,21 @@ void main(int argc, char** argv)
 	char dataBuffer[2500];
 	float convertedValues[2500];
 
-	int y, conversion;
+	int y; 
+	float conversion;
+	float target_volts = 5;
+	float volts;
+
+	float Amplitude;
+	float max = -127;
+	float min = 128;
+
 
 	int lsb;
 	int msb;
 
 	status = viOpenDefaultRM(&defaultRM);
+
 
 	if(status == VI_SUCCESS)
 	{
@@ -58,28 +75,51 @@ void main(int argc, char** argv)
 				viWrite(scopeHandle,"*IDN?\n",6,&resultCount);
 				viRead(scopeHandle,resultBuffer,256,&resultCount);
 
+				viWrite(scopeHandle,"DAT:SOU CH1\n",12,&resultCount);
+			/*	viRead(scopeHandle,resultBuffer,256,&resultCount);
+
+				printf("DATA SOURCE = %s",resultBuffer);*/
+
 				printf("\nResult count = %d",resultCount);
 				printf("\nResult buffer = %s\n",resultBuffer);
-                int v = 10000;
-                set_voltage(scopeHandle,v);
+                set_voltage(scopeHandle,target_volts);
 				get_curve(scopeHandle, dataBuffer,2500);
 
-				viWrite(scopeHandle,"CH1:SCA?\n",6,&resultCount);
+				viWrite(scopeHandle,"CH1:SCA?\n",9,&resultCount);
 				char ret[36];
-				viRead(scopeHandle,ret,52,&resultCount);
-				sscanf(ret,"%f",v);
-				conversion = v*8/256; 
+				ret[8] = '\0';
+				viRead(scopeHandle,ret,36,&resultCount);
 
+				sscanf(ret,"%f",&volts);
+				
+				volts = atof(ret);
+				conversion = volts*10.0/256; 
 
+				printf("ret = %s Volts = %f Conversion factor = %f",ret,volts,conversion);
 
 				for(int i = 0; i<128; i++)
 				{
 					y = dataBuffer[i];
 					convertedValues[i] = y*conversion;
 
-                    printf("%f\n",convertedValues[i]);
-					printf("\nRaw = %x,  Read = %d",y,y);
+					if (max < convertedValues[i])
+					{
+						max=convertedValues[i];
+					}
+
+					if (min > convertedValues[i])
+					{
+						min=convertedValues[i];
+					}
+
+					Amplitude = (max-min)/2;
+
+					//printf("\nRaw = %x,  Read = %d, Converted = %f",y,y,convertedValues[i]);
+					printf("Converted = %f\n", convertedValues[i]);
+					printf("Amplitude = %f\n", Amplitude);
+			
 				}
+
 			}
 			else
 			{
