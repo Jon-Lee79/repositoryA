@@ -93,30 +93,31 @@ void main(int argc, char** argv)
 				sscanf(ret,"%f",&volts);
 				
 				volts = atof(ret);
-				conversion = volts*10.0/256; 
+				conversion = volts*10.0/256; // Conversion factor for Oscilloscope
 
 				printf("ret = %s Volts = %f Conversion factor = %f",ret,volts,conversion);
 
-				for(int i = 0; i<128; i++)
+				for(int i = 6; i<2500; i++)
 				{
 					y = dataBuffer[i];
 					convertedValues[i] = y*conversion;
 
 					if (max < convertedValues[i])
 					{
-						max=convertedValues[i];
+						max=convertedValues[i]; // Determines max value of wave
 					}
 
 					if (min > convertedValues[i])
 					{
-						min=convertedValues[i];
+						min=convertedValues[i]; // Determines min value of wave
 					}
 
-					Amplitude = (max-min)/2;
+					Amplitude = (max-min)/2; // Amplitude conversion
 
 					//printf("\nRaw = %x,  Read = %d, Converted = %f",y,y,convertedValues[i]);
-					printf("Converted = %f\n", convertedValues[i]);
-					printf("Amplitude = %f\n", Amplitude);
+					printf("\nConverted = %f", convertedValues[i]);
+					printf("\tAmplitude = %f", Amplitude);   // Amplitude over 2500 points
+					printf("\tmax = %f, min = %f",max, min); // max and min values
 			
 				}
 
