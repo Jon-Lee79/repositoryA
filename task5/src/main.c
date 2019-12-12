@@ -3,6 +3,9 @@
 #include <math.h>	
 #include <visa.h>
 #include <string.h>
+#include "find_amplitude.h"
+#include "smooth_function.h"
+
   
 ViStatus set_voltage(ViSession handle, float volts)
 {
@@ -76,9 +79,6 @@ void main(int argc, char** argv)
 				viRead(scopeHandle,resultBuffer,256,&resultCount);
 
 				viWrite(scopeHandle,"DAT:SOU CH1\n",12,&resultCount);
-			/*	viRead(scopeHandle,resultBuffer,256,&resultCount);
-
-				printf("DATA SOURCE = %s",resultBuffer);*/
 
 				printf("\nResult count = %d",resultCount);
 				printf("\nResult buffer = %s\n",resultBuffer);
@@ -93,7 +93,7 @@ void main(int argc, char** argv)
 				sscanf(ret,"%f",&volts);
 				
 				volts = atof(ret);
-				conversion = volts*10.0/256; // Conversion factor for Oscilloscope
+				conversion = volts*10.0/256; 
 
 				printf("ret = %s Volts = %f Conversion factor = %f",ret,volts,conversion);
 
@@ -104,20 +104,19 @@ void main(int argc, char** argv)
 
 					if (max < convertedValues[i])
 					{
-						max=convertedValues[i]; // Determines max value of wave
+						max=convertedValues[i]; // Determines maximum value of wave
 					}
 
 					if (min > convertedValues[i])
 					{
-						min=convertedValues[i]; // Determines min value of wave
+						min=convertedValues[i]; // Determines minimum value of wave
 					}
 
 					Amplitude = (max-min)/2; // Amplitude conversion
 
-					//printf("\nRaw = %x,  Read = %d, Converted = %f",y,y,convertedValues[i]);
 					printf("\nConverted = %f", convertedValues[i]);
 					printf("\tAmplitude = %f", Amplitude);   // Amplitude over 2500 points
-					printf("\tmax = %f, min = %f",max, min); // max and min values
+					printf("\tmax = %f, min = %f",max, min); // Output maximum and minimum values
 			
 				}
 
